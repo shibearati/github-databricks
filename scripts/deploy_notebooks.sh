@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-DATABRICKS_WORKSPACE_DIR="/Workspace/latest"
+DATABRICKS_WORKSPACE_DIR="/Workspace/datatransformation"
 LOCAL_NOTEBOOK_DIR="./notebooks"
 
 # Import notebooks to Databricks workspace
