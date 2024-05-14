@@ -1,53 +1,39 @@
-name: Deploy to Databricks
+name: Deploy Notebooks to Databricks
 
 on:
   push:
     branches:
-      - main
+      - main  # Set to the branch name you want to deploy from
 
 jobs:
-  deploy:
+  deploy_notebooks:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout Code
       uses: actions/checkout@v2
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.8'  # Python version should be compatible with databricks-cli
 
     - name: Install Databricks CLI
-      run: |
-        python -m pip install --upgrade pip
-        pip install databricks-cli
+      run: pip install databricks-cli
 
     - name: Configure Databricks CLI
-      env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_WORKSPACE_URL }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
       run: |
-        $configDir = "$env:USERPROFILE\.databricks"
-        if (-Not (Test-Path -Path $configDir)) {
-          New-Item -ItemType Directory -Path $configDir
-        }
-        $content = "[DEFAULT]`nhost = $env:DATABRICKS_HOST`ntoken = $env:DATABRICKS_TOKEN"
-        $content | Out-File -FilePath "$configDir\config" -Encoding utf8 -Force
+        $configDir = Join-Path $env:USERPROFILE ".databricks"
+        New-Item -ItemType Directory -Path $configDir -Force
+        $configFilePath = Join-Path $configDir "config"
+        $content = "[DEFAULT]`nhost = ${{ secrets.DATABRICKS_HOST }}`ntoken = ${{ secrets.DATABRICKS_TOKEN }}"
+        $content | Out-File -FilePath $configFilePath -Encoding UTF8 -Force
+        Write-Output "Config file created at: $configFilePath"
+      shell: pwsh
 
-    - name: List config directory
+    - name: Deploy Notebooks to Databricks
       run: |
-        Get-ChildItem -Path "$env:USERPROFILE\.databricks" -Force
-
-    - name: Deploy Notebooks
-      run: |
-      # Set the configuration file path
         $configFilePath = Join-Path $env:USERPROFILE ".databricks\config"
-    
-      # Ensure the path is correctly printed (for debugging)
-      Write-Output "Config file path: $configFilePath"
-    
-      # Execute Databricks CLI with the explicit config file
-      databricks --profile DEFAULT --config-file $configFilePath workspace import_dir curation/datatransformation /datatransformation --overwrite
-    shell: pwsh
+        databricks --profile DEFAULT --config-file $configFilePath workspace import_dir ./curation/datatransformation /datatransformation --overwrite
+      shell: pwsh
 
