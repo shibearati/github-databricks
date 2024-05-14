@@ -35,5 +35,14 @@ jobs:
         $content = "[DEFAULT]`nhost = $env:DATABRICKS_HOST`ntoken = $env:DATABRICKS_TOKEN"
         $content | Out-File -FilePath "$configDir\config" -Encoding utf8 -Force
 
+    - name: List config directory
+      run: |
+        Get-ChildItem -Path "$env:USERPROFILE\.databricks" -Force
+
     - name: Deploy Notebooks
-      run: databricks workspace import_dir curation/datatransformation /datatransformation --overwrite
+      run: |
+        $Env:DATABRICKS_CONFIG = "$env:USERPROFILE\.databricks\config"
+        databricks --profile DEFAULT --config-file $Env:DATABRICKS_CONFIG workspace import_dir curation/datatransformation /datatransformation --overwrite
+      shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+      env:
+        pythonLocation: C:\hostedtoolcache\windows\Python\3.12.3\x64
