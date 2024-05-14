@@ -41,8 +41,13 @@ jobs:
 
     - name: Deploy Notebooks
       run: |
-        $Env:DATABRICKS_CONFIG = "$env:USERPROFILE\.databricks\config"
-        databricks --profile DEFAULT --config-file $Env:DATABRICKS_CONFIG workspace import_dir curation/datatransformation /datatransformation --overwrite
-      shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
-      env:
-        pythonLocation: C:\hostedtoolcache\windows\Python\3.12.3\x64
+      # Set the configuration file path
+        $configFilePath = Join-Path $env:USERPROFILE ".databricks\config"
+    
+      # Ensure the path is correctly printed (for debugging)
+      Write-Output "Config file path: $configFilePath"
+    
+      # Execute Databricks CLI with the explicit config file
+      databricks --profile DEFAULT --config-file $configFilePath workspace import_dir curation/datatransformation /datatransformation --overwrite
+    shell: pwsh
+
