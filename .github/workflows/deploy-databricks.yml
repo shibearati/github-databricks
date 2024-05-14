@@ -28,8 +28,12 @@ jobs:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_WORKSPACE_URL }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
       run: |
+        $configDir = "$env:USERPROFILE\.databricks"
+        if (-Not (Test-Path -Path $configDir)) {
+          New-Item -ItemType Directory -Path $configDir
+        }
         $content = "[DEFAULT]`nhost = $env:DATABRICKS_HOST`ntoken = $env:DATABRICKS_TOKEN"
-        $content | Out-File -FilePath $env:USERPROFILE\.databricks\config -Encoding utf8 -Force
+        $content | Out-File -FilePath "$configDir\config" -Encoding utf8 -Force
 
     - name: Deploy Notebooks
       run: databricks workspace import_dir curation/datatransformation /datatransformation --overwrite
