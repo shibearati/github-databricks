@@ -16,24 +16,23 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'  # Python version should be compatible with databricks-cli
+        python-version: '3.x'  # Use compatible Python version for databricks-cli
 
     - name: Install Databricks CLI
-      run: pip install databricks-cli
+      run: |
+        python -m pip install --upgrade pip
+        pip install databricks-cli
 
     - name: Configure Databricks CLI
       run: |
         $configDir = Join-Path $env:USERPROFILE ".databricks"
-        New-Item -ItemType Directory -Path $configDir -Force
+        New-Item -Path $configDir -ItemType Directory -Force
         $configFilePath = Join-Path $configDir "config"
         $content = "[DEFAULT]`nhost = ${{ secrets.DATABRICKS_HOST }}`ntoken = ${{ secrets.DATABRICKS_TOKEN }}"
         $content | Out-File -FilePath $configFilePath -Encoding UTF8 -Force
-        Write-Output "Config file created at: $configFilePath"
-      shell: pwsh
+        Write-Output "Configured Databricks CLI profile"
 
     - name: Deploy Notebooks to Databricks
       run: |
-        $configFilePath = Join-Path $env:USERPROFILE ".databricks\config"
-        databricks --profile DEFAULT --config-file $configFilePath workspace import_dir ./curation/datatransformation /datatransformation --overwrite
+        databricks workspace import_dir ./curation/datatransformation /datatransformation --overwrite --profile DEFAULT
       shell: pwsh
-
