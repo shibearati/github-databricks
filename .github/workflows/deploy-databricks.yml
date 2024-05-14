@@ -30,12 +30,12 @@ jobs:
         $configFilePath = Join-Path $configDir "config"
         $content = "[DEFAULT]`nhost = ${{ secrets.DATABRICKS_HOST }}`ntoken = ${{ secrets.DATABRICKS_TOKEN }}"
         $content | Out-File -FilePath $configFilePath -Encoding UTF8 -Force
-        Write-Output "Configured Databricks CLI profile"
-
-        # Configure the Databricks CLI profile
-        & "C:\hostedtoolcache\windows\Python\3.12.3\x64\Scripts\databricks" configure --profile DEFAULT
+        Write-Output "Configured Databricks CLI profile at $configFilePath"
 
     - name: Deploy Notebooks to Databricks
       run: |
         databricks workspace import_dir ./curation/datatransformation /datatransformation --overwrite --profile DEFAULT
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
       shell: pwsh
