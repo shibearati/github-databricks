@@ -28,13 +28,16 @@ jobs:
         $configDir = Join-Path $env:USERPROFILE ".databricks"
         New-Item -Path $configDir -ItemType Directory -Force
         $configFilePath = Join-Path $configDir "config"
-        $content = "[DEFAULT]`nhost = ${{ secrets.DATABRICKS_HOST }}`ntoken = ${{ secrets.DATABRICKS_TOKEN }}"
+        $content = "[DEFAULT]`nhost = $env:DATABRICKS_HOST`ntoken = $env:DATABRICKS_TOKEN"
         $content | Out-File -FilePath $configFilePath -Encoding UTF8 -Force
         Write-Output "Configured Databricks CLI profile at $configFilePath"
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
     - name: Deploy Notebooks to Databricks
       run: |
-        databricks workspace import_dir ./curation/datatransformation /datatransformation --overwrite --profile DEFAULT
+        databricks workspace import_dir ./curation/datatransformation /datatransformation --overwrite
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
